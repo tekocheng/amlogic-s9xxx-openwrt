@@ -138,15 +138,6 @@ custom_packages() {
     [[ "${?}" -eq "0" ]] || error_msg "[ ${amlogic_i18n} ] download failed!"
     echo -e "${INFO} The [ ${amlogic_i18n} ] is downloaded successfully."
 
-    # Download luci-app-diskman
-    diskman_api="https://github.com/lisaac/luci-app-diskman/releases"
-    #
-    diskman_file="luci-app-diskman"
-    diskman_file_down="$(curl -s ${diskman_api} | grep "browser_download_url" | grep -oE "https.*${diskman_name}.*.ipk" | head -n 1)"
-    curl -fsSOJL ${diskman_file_down}
-    [[ "${?}" -eq "0" ]] || error_msg "[ ${diskman_file} ] download failed!"
-    echo -e "${INFO} The [ ${diskman_file} ] is downloaded successfully."
-
     # Download other luci-app-xxx
     # ......
 
@@ -210,7 +201,7 @@ rebuild_firmware() {
         luci-mod-status luci-mod-system luci-proto-3g luci-proto-bonding luci-proto-ipip luci-proto-ipv6 \
         luci-proto-ncm luci-proto-openconnect luci-proto-ppp luci-proto-qmi luci-proto-relay \
         \
-        luci-app-amlogic luci-i18n-amlogic-zh-cn luci-app-diskman \
+        luci-app-amlogic luci-i18n-amlogic-zh-cn \
         \
         ${config_list} \
         "
