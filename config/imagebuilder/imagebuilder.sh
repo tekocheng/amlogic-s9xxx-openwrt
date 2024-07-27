@@ -182,6 +182,7 @@ rebuild_firmware() {
         cgi-io libiwinfo libiwinfo-data libiwinfo-lua liblua liblucihttp liblucihttp-lua \
         libubus-lua lua luci-base luci-lib-base luci-lib-ip luci-lib-jsonc luci-lib-nixio \
         luci-mod-admin-full luci-mod-network luci-mod-status luci-mod-system luci-proto-ppp luci-ssl \
+        luci-proto-bonding luci-proto-ipip luci-proto-ipv6 luci-proto-qmi luci-proto-relay \
         rpcd rpcd-mod-file rpcd-mod-iwinfo rpcd-mod-luci rpcd-mod-rrdns \
         hostapd hostapd-utils kmod-ath kmod-ath9k kmod-ath9k-common kmod-ath9k-htc \
         kmod-cfg80211 kmod-crypto-acompress kmod-crypto-crc32c kmod-crypto-hash kmod-fs-btrfs \
@@ -189,7 +190,7 @@ rebuild_firmware() {
         openssh-sftp-server usbutils kmod-usb2 kmod-brcmfmac perlbase-file kmod-brcmutil perlbase-essential \
         perlbase-utf8 perlbase-file perlbase-time perlbase-xsloader coreutils-stat zoneinfo-asia \
         \
-        luci-app-amlogic luci-app-diskman \
+        luci-app-amlogic \
         \
         ${config_list} \
         "
