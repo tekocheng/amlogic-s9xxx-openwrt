@@ -179,21 +179,21 @@ rebuild_firmware() {
 
     # Selecting default packages, lib, theme, app and i18n, etc.
     my_packages="\
-        base-files bash blkid block-mount blockd btrfs-progs busybox bzip2 \
-        cgi-io comgt comgt-ncm coreutils coreutils-base64 coreutils-nohup coreutils-timeout \
-        coreutils-truncate curl dosfstools e2fsprogs \
-        exfat-mkfs fdisk gzip hostapd-common iconv iw iwinfo jq \
-        jshn kmod-cfg80211 kmod-mac80211 libjson-script liblucihttp \
-        liblucihttp-lua losetup lsblk mkf2fs mount-utils openssl-util parted \
+        acpid attr base-files bash bc blkid block-mount blockd bsdtar btrfs-progs busybox bzip2 \
+        cgi-io chattr comgt comgt-ncm coremark coreutils coreutils-base64 coreutils-nohup \
+        coreutils-truncate curl dosfstools dumpe2fs e2freefrag e2fsprogs \
+        exfat-mkfs f2fs-tools f2fsck fdisk gawk getopt git gzip hostapd-common iconv iw iwinfo jq \
+        jshn kmod-brcmfmac kmod-brcmutil kmod-cfg80211 kmod-mac80211 libjson-script liblucihttp \
+        liblucihttp-lua losetup lsattr lsblk lscpu mkf2fs mount-utils openssl-util parted \
         perl-http-date perlbase-file perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8 \
-        ppp ppp-mod-pppoe pv resize2fs tar tini ttyd \
-        uclient-fetch uhttpd uhttpd-mod-ubus unzip uqmi usb-modeswitch uuidgen wget-ssl \
-        wpad-basic wwan xz xz-utils zoneinfo-asia zoneinfo-core \
+        pigz ppp ppp-mod-pppoe proto-bonding pv rename resize2fs runc tar tini ttyd tune2fs \
+        uclient-fetch uhttpd uhttpd-mod-ubus unzip uqmi usb-modeswitch uuidgen wget-ssl whereis \
+        wpad-basic wwan xfs-fsck xfs-mkfs xz xz-utils ziptool zoneinfo-asia zoneinfo-core zstd \
         \
         luci luci-base luci-compat luci-lib-base \
         luci-lib-ip luci-lib-ipkg luci-lib-jsonc luci-lib-nixio luci-mod-admin-full luci-mod-network \
-        luci-mod-status luci-mod-system luci-proto-3g luci-proto-ipv6 \
-        luci-proto-ncm luci-proto-ppp luci-proto-qmi \
+        luci-mod-status luci-mod-system luci-proto-3g luci-proto-bonding luci-proto-ipip luci-proto-ipv6 \
+        luci-proto-ncm luci-proto-openconnect luci-proto-ppp luci-proto-qmi luci-proto-relay \
         \
         luci-app-amlogic \
         \
