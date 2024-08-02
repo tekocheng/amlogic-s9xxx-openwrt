@@ -57,6 +57,7 @@ on:
           - leez
           - lx-r3s
           - mrkaio-m68s
+          - nanopc-t6
           - nanopi-r5c
           - nanopi-r5s
           - orangepi-5-plus
@@ -166,7 +167,7 @@ on:
       openwrt_kernel:
         description: "Select kernel version"
         required: false
-        default: "6.1.y_6.6.y"
+        default: "6.6.y"
         type: choice
         options:
           - 5.4.y
