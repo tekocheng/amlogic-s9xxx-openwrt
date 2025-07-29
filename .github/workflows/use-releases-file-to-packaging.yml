@@ -1,9 +1,9 @@
 #=====================================================================================
 # https://github.com/ophub/amlogic-s9xxx-openwrt
-# Description: Build OpenWrt using releases files
+# Description: Use Releases file to packaging
 #=====================================================================================
 
-name: Build OpenWrt using releases files
+name: Use Releases file to Packaging
 
 on:
   repository_dispatch:
@@ -25,17 +25,14 @@ on:
         type: choice
         options:
           - all
-          - top50
-          - rest50
-          - a311d-oes_s905d_s905x3_s922x-ct2000_wxy-oect
+          - s905w_s905x_s905mb_s905l3a_s905l3b_s905x2_s905x3_s912_s922x_s922x-ct2000_s922x-reva
+          - s905x3-x88-pro-x3_s912-m8s-pro_s905x-t95_s912-t95z-plus_s905l3-unt400g1_s905lb-r3300l
+          - s912-x92_s922x_s922x-ct2000_s922x-reva_seewo-sv21_smart-am40_station-m1_sw799_swan1-w28
+          - tanix-tx6_tb-ls3399_tn3399_tpm312_tqc-a01_tvi3315a_vplus_wxy-oec_xiaobao_yskj_zcube1-max_zk-r39a_zysj
           - a311d
-          - a311d-oes
-          - alark35-3500
-          - anas3035
           - beikeyun
           - chainedbox
           - crrc
-          - dc-a588
           - dg3399
           - dg-tn3568
           - dlfr100
@@ -67,7 +64,6 @@ on:
           - nanopi-r5c
           - nanopi-r5s
           - orangepi-5-plus
-          - orangepi-5b
           - panther-x2
           - r66s
           - r68s
@@ -157,15 +153,11 @@ on:
           - s922x-gtking
           - s922x-gtkingpro-h
           - s922x-odroid-n2
-          - s922x-oes-plus
           - s922x-reva
           - s922x-ugoos-am6
           - seewo-sv21
           - smart-am40
-          - smart-am60
           - station-m1
-          - station-m2
-          - sv-33a6x
           - swan1-w28
           - sw799
           - tanix-tx6
@@ -175,8 +167,7 @@ on:
           - tqc-a01
           - tvi3315a
           - vplus
-          - wxy-oect
-          - wxy-oect-replaced
+          - wxy-oec
           - xiaobao
           - yskj
           - zcube1-max
@@ -185,7 +176,7 @@ on:
       openwrt_kernel:
         description: "Select kernel version"
         required: false
-        default: "5.15.y_6.1.y"
+        default: "6.1.y_6.6.y"
         type: choice
         options:
           - 5.4.y
@@ -196,9 +187,8 @@ on:
           - 6.12.y
           - 5.4.y_5.10.y
           - 5.15.y_6.1.y
-          - 6.1.y_6.12.y
-          - 6.1.y_6.6.y
           - 6.6.y_6.12.y
+          - 6.1.y_6.6.y
       auto_kernel:
         description: "Auto use the latest kernel"
         required: false
@@ -258,7 +248,7 @@ jobs:
         run: |
           docker rmi $(docker images -q) 2>/dev/null
           [[ -n "${AGENT_TOOLSDIRECTORY}" ]] && sudo rm -rf "${AGENT_TOOLSDIRECTORY}"
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android 2>/dev/null
+          sudo rm -rf /usr/share/dotnet /etc/apt/sources.list.d /usr/local/lib/android 2>/dev/null
           sudo swapoff -a
           sudo rm -f /swapfile /mnt/swapfile
           sudo -E apt-get -y update
@@ -314,30 +304,29 @@ jobs:
               exit 1
           fi
 
-          armsr_tarfile_path="openwrt/output"
-          [[ -d "${armsr_tarfile_path}" ]] || mkdir -p ${armsr_tarfile_path}
+          armvirt_tarfile_path="openwrt/output"
+          [[ -d "${armvirt_tarfile_path}" ]] || mkdir -p ${armvirt_tarfile_path}
           ln -sf /builder/openwrt ${GITHUB_WORKSPACE}/openwrt
           ln -sf /builder/openwrt /home/runner/work/_actions/ophub/amlogic-s9xxx-openwrt/main/openwrt
 
-          latest_version=$(curl -s \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100 | \
-                jq -r --arg RTK "OpenWrt_${{ inputs.source_branch }}_" \
-                --arg BOARD "-rootfs.tar.gz" \
-                '[.[] | select(.tag_name | contains($RTK))] |
-                map(.assets[] | select(.browser_download_url | endswith($BOARD))) |
-                sort_by(.updated_at) |
-                reverse |
-                .[0] |
-                {data: .updated_at, url: .browser_download_url}')
+          latest_version="$(curl -s \
+                              -H "Accept: application/vnd.github+json" \
+                              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                              https://api.github.com/repos/${GITHUB_REPOSITORY}/releases?per_page=100 |
+                              jq '.[]' |
+                              jq -s --arg RTK "OpenWrt_${{ inputs.source_branch }}_" '.[] | select(.tag_name | contains($RTK))' |
+                              jq -s '.[].assets[] | {data:.updated_at, url:.browser_download_url}' |
+                              jq -s --arg BOARD "-rootfs.tar.gz" '.[] | select(.url | endswith($BOARD))' |
+                              jq -s 'sort_by(.data)|reverse[]' |
+                              jq -s '.[0]' -c
+                          )"
 
-          [[ -z "${latest_version}" || "${latest_version}" == "null" ]] && echo "Invalid OpenWrt rootfs download address." && exit 1
+          [[ "${latest_version}" == "null" ]] && echo "Invalid OpenWrt rootfs download address." && exit 1
           latest_updated_at="$(echo ${latest_version} | jq -r '.data')"
           latest_url="$(echo ${latest_version} | jq -r '.url')"
 
           openwrt_filename="${latest_url##*/}"
-          curl -fsSL "${latest_url}" -o "${armsr_tarfile_path}/${openwrt_filename}"
+          curl -fsSL "${latest_url}" -o "${armvirt_tarfile_path}/${openwrt_filename}"
           [[ "${?}" -ne "0" ]] && echo "Invalid OpenWrt rootfs download address." && exit 1
 
           echo "build_tag=OpenWrt_${{ inputs.source_branch }}_${{ inputs.openwrt_storage }}_$(date +"%Y.%m")" >> ${GITHUB_OUTPUT}
