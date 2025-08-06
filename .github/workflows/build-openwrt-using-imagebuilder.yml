@@ -205,6 +205,7 @@ on:
           - 6.1.y_6.12.y
           - 6.1.y_6.6.y
           - 6.6.y_6.12.y
+          - 6.1.66-DBAI
       auto_kernel:
         description: "Auto use the latest kernel"
         required: false
@@ -217,6 +218,7 @@ on:
         type: choice
         options:
           - ophub/kernel
+          - tekocheng/kernel
       kernel_usage:
         description: "Set the tags of the stable kernel."
         required: false
@@ -235,10 +237,10 @@ on:
         options:
           - ophub
           - angel
-          - yourname
+          - cloudpeople
 
 env:
-  TZ: America/New_York
+  TZ: Asia/Jakarta
   IMAGEBUILDER_SH: config/imagebuilder/imagebuilder.sh
 
 jobs:
