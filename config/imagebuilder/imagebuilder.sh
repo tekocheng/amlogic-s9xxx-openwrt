@@ -208,14 +208,14 @@ rebuild_firmware() {
         jshn kmod-brcmfmac kmod-brcmutil kmod-cfg80211 kmod-mac80211 libjson-script liblucihttp \
         liblucihttp-lua losetup lsattr lsblk lscpu mkf2fs mount-utils openssl-util parted \
         perl-http-date perlbase-file perlbase-getopt perlbase-time perlbase-unicode perlbase-utf8 \
-        pigz ppp ppp-mod-pppoe pv rename resize2fs runc tar tini ttyd tune2fs \
+        pigz ppp ppp-mod-pppoe pv rename resize2fs tar ttyd tune2fs \
         uclient-fetch uhttpd uhttpd-mod-ubus unzip uuidgen wget-ssl whereis \
-        which wpad-basic wwan xfs-fsck xfs-mkfs xz xz-utils ziptool zoneinfo-asia zoneinfo-core zstd \
+        which wpad-basic xfs-fsck xfs-mkfs xz xz-utils ziptool zoneinfo-asia zoneinfo-core zstd \
         \
         luci luci-base luci-compat luci-lib-base \
         luci-lib-ip luci-lib-ipkg luci-lib-jsonc luci-lib-nixio luci-mod-admin-full luci-mod-network \
-        luci-mod-status luci-mod-system luci-proto-ipip luci-proto-ipv6 \
-        luci-proto-ppp luci-proto-relay \
+        luci-mod-status luci-mod-system luci-proto-ipv6 \
+        luci-proto-ppp \
         \
         luci-app-amlogic \
         \
