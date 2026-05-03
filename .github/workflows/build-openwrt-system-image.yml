@@ -296,8 +296,8 @@ on:
         type: choice
         options:
           - ophub
-          - angel
-          - yourname
+          - meowtwo
+          - tekocheng
 
 env:
   FEEDS_CONF: config/${{ inputs.source_branch }}/feeds.conf.default
