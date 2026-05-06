@@ -46,10 +46,6 @@ inputs:
     description: "Set OpenWrt builder signature."
     required: false
     default: ""
-  openwrt_fs:
-    description: "Set rootfs filesystem type (ext4 or btrfs)."
-    required: false
-    default: "btrfs"
 
 runs:
   using: "composite"
@@ -115,7 +111,6 @@ runs:
         [[ -n "${{ inputs.openwrt_ip }}"     ]] && make_args+=(-p "${{ inputs.openwrt_ip }}")
         [[ -n "${{ inputs.openwrt_size }}"   ]] && make_args+=(-s "${{ inputs.openwrt_size }}")
         [[ -n "${builder_name}"              ]] && make_args+=(-n "${builder_name}")
-        [[ -n "${{ inputs.openwrt_fs }}"     ]] && make_args+=(-f "${{ inputs.openwrt_fs }}")
         sudo ./remake "${make_args[@]}"
 
         cd ${{ github.action_path }}

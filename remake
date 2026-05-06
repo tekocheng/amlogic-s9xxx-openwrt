@@ -122,8 +122,6 @@ boot_mb="384"
 root_mb="1280"
 # Set OpenWrt builder signature
 builder_name=""
-# Set rootfs filesystem type: btrfs or ext4
-rootfs_type="btrfs"
 
 # Set font color
 STEPS="[\033[95m STEPS \033[0m]"
@@ -193,7 +191,7 @@ init_var() {
     echo -e "${STEPS} Initializing build variables..."
 
     # If it is followed by [ : ], it means that the option requires a parameter value
-    local options="b:r:u:k:a:p:s:n:f:"
+    local options="b:r:u:k:a:p:s:n:"
     parsed_args=$(getopt -o "${options}" -- "${@}")
     [[ ${?} -ne 0 ]] && error_msg "Parameter parsing failed."
     eval set -- "${parsed_args}"
@@ -270,14 +268,6 @@ init_var() {
                 error_msg "Invalid -n parameter [ ${2} ]!"
             fi
             ;;
-        -f | --Filesystem)
-            if [[ -n "${2}" ]]; then
-                rootfs_type="${2}"
-                shift 2
-            else
-                error_msg "Invalid -f parameter [ ${2} ]!"
-            fi
-            ;;
         --)
             shift
             break
@@ -302,10 +292,6 @@ init_var() {
     # Validate partition sizes (Unit: MiB). Boot must be >= 256 and root >= 1024 to fit.
     [[ "${boot_mb}" =~ ^[0-9]+$ && "${boot_mb}" -ge 256 ]] || error_msg "Invalid boot partition size: [ ${boot_mb} ]"
     [[ "${root_mb}" =~ ^[0-9]+$ && "${root_mb}" -ge 1024 ]] || error_msg "Invalid rootfs partition size: [ ${root_mb} ]"
-
-    # Validate rootfs filesystem type
-    [[ "${rootfs_type}" == "btrfs" || "${rootfs_type}" == "ext4" ]] || error_msg "Invalid rootfs type [ ${rootfs_type} ], use 'btrfs' or 'ext4'."
-    echo -e "${INFO} Rootfs filesystem type: [ ${rootfs_type} ]"
 }
 
 check_data() {
@@ -813,7 +799,7 @@ make_image() {
 
     parted -s "${build_image_file}" mklabel ${partition_table_type} 2>/dev/null
     parted -s "${build_image_file}" mkpart primary ${bootfs_type} $((skip_mb))MiB $((skip_mb + boot_mb - 1))MiB 2>/dev/null
-    parted -s "${build_image_file}" mkpart primary ${rootfs_type} $((skip_mb + boot_mb))MiB 100% 2>/dev/null
+    parted -s "${build_image_file}" mkpart primary btrfs $((skip_mb + boot_mb))MiB 100% 2>/dev/null
 
     # Mount the OpenWrt image file
     loop_new="$(losetup -P -f --show "${build_image_file}")"
@@ -836,11 +822,7 @@ make_image() {
     fi
 
     # Format rootfs partition
-    if [[ "${rootfs_type}" == "btrfs" ]]; then
-        mkfs.btrfs -f -U ${ROOTFS_UUID} -L "ROOTFS" -m single ${loop_new}p2 >/dev/null 2>&1
-    else
-        mkfs.ext4 -F -q -U ${ROOTFS_UUID} -L "ROOTFS" -b 4k -m 0 ${loop_new}p2 >/dev/null 2>&1
-    fi
+    mkfs.btrfs -f -U ${ROOTFS_UUID} -L "ROOTFS" -m single ${loop_new}p2 >/dev/null 2>&1
 
     # Write the specific bootloader for [ Amlogic ] boxes
     [[ "${PLATFORM}" == "amlogic" ]] && {
@@ -916,10 +898,10 @@ extract_openwrt() {
     fi
 
     # Mount rootfs
-    mount_try ${rootfs_type} "${loop_new}p2" "${tag_rootfs}"
+    mount_try btrfs "${loop_new}p2" "${tag_rootfs}"
 
-    # Create snapshot directory (btrfs only)
-    [[ "${rootfs_type}" == "btrfs" ]] && btrfs subvolume create "${tag_rootfs}/etc" >/dev/null 2>&1
+    # Create snapshot directory
+    btrfs subvolume create "${tag_rootfs}/etc" >/dev/null 2>&1
 
     # Unzip the OpenWrt rootfs file
     tar -mxzf "${openwrt_path}/${openwrt_default_file}" -C "${tag_rootfs}"
@@ -1012,15 +994,10 @@ refactor_bootfs() {
     }
 
     # Set uEnv.txt & extlinux.conf mount parameters
-    if [[ "${rootfs_type}" == "btrfs" ]]; then
-        uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=compress=zstd:6 rw rootwait rootfstype=btrfs"
-        armbianenv_rootflags="compress=zstd:6"
-    else
-        uenv_rootdev="UUID=${ROOTFS_UUID} rw rootwait rootfstype=ext4"
-        armbianenv_rootflags="errors=remount-ro"
-    fi
+    uenv_rootdev="UUID=${ROOTFS_UUID} rootflags=compress=zstd:6 rw rootwait rootfstype=btrfs"
     # Set armbianEnv.txt mount parameters
     armbianenv_rootdev="UUID=${ROOTFS_UUID}"
+    armbianenv_rootflags="compress=zstd:6"
 
     # Edit the uEnv.txt
     uenv_conf_file="uEnv.txt"
@@ -1053,7 +1030,7 @@ refactor_bootfs() {
         sed -i \
             -e "s|\\(fdtfile=.*\\/\\)[^/]*$|\\1${FDTFILE}|g" \
             -e "s|^rootdev=.*|rootdev=${armbianenv_rootdev}|g" \
-            -e "s|^rootfstype=.*|rootfstype=${rootfs_type}|g" \
+            -e "s|^rootfstype=.*|rootfstype=btrfs|g" \
             -e "s|^rootflags=.*|rootflags=${armbianenv_rootflags}|g" \
             -e "s|^overlay_prefix=.*|overlay_prefix=${FAMILY}|g" \
             "${armbianenv_conf_file}"
@@ -1079,15 +1056,6 @@ refactor_rootfs() {
     [[ -f "etc/fstab" && -f "etc/config/fstab" ]] || error_msg "The [ fstab ] files do not exist."
     sed -i "s|LABEL=ROOTFS|UUID=${ROOTFS_UUID}|g" etc/fstab
     sed -i "s|option label 'ROOTFS'|option uuid '${ROOTFS_UUID}'|g" etc/config/fstab
-    # Update fstype and mount options in fstab based on rootfs_type
-    if [[ "${rootfs_type}" == "ext4" ]]; then
-        # Replace: LABEL=ROOTFS / btrfs compress=zstd:6 0 1
-        # With:    UUID=xxx     / ext4  defaults        0 1
-        sed -i "s|btrfs compress=zstd:6|ext4 defaults|g" etc/fstab
-        sed -i "s|option fstype 'btrfs'|option fstype 'ext4'|g" etc/config/fstab
-        sed -i "s|option options 'compress=zstd:6'|option options 'defaults'|g" etc/config/fstab
-        sed -i "/compress=zstd/d" etc/config/fstab
-    fi
 
     # Set the OpenWrt download tags for luci-app-amlogic
     [[ -n "${source_codename}" ]] && tags_str="_${source_codename}" || tags_str=""
@@ -1295,11 +1263,9 @@ EOF
     install_menu=$(echo "${model_txt}" | awk -F'/' '{print $(NF-1)"/"$NF}')
     grep -E ":${FAMILY}:" ${install_menu} | cut -d':' -f1-8 >temp.txt && mv -f temp.txt ${install_menu}
 
-    # Create initial /etc snapshot (btrfs only)
-    if [[ "${rootfs_type}" == "btrfs" ]]; then
-        mkdir -p .snapshots
-        btrfs subvolume snapshot -r etc .snapshots/etc-000 >/dev/null 2>&1
-    fi
+    # Create initial /etc snapshot
+    mkdir -p .snapshots
+    btrfs subvolume snapshot -r etc .snapshots/etc-000 >/dev/null 2>&1
 
     sync && sleep 3
 }
