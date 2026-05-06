@@ -289,6 +289,14 @@ on:
         options:
           - save
           - temp
+      openwrt_fs:
+        description: "Select rootfs filesystem type."
+        required: false
+        default: "btrfs"
+        type: choice
+        options:
+          - btrfs
+          - ext4
       builder_name:
         description: "Set OpenWrt builder signature."
         required: false
@@ -504,6 +512,7 @@ jobs:
           kernel_repo: ${{ inputs.kernel_repo }}
           kernel_usage: ${{ inputs.kernel_usage }}
           builder_name: ${{ inputs.builder_name }}
+          openwrt_fs: ${{ inputs.openwrt_fs }}
 
       - name: Upload packaged OpenWrt to Release
         uses: ncipollo/release-action@main
