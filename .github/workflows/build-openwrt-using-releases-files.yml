@@ -302,7 +302,8 @@ on:
         options:
           - ophub
           - angel
-          - yourname
+          - meowtwo
+          - tekocheng
 
 env:
   TZ: Etc/UTC
