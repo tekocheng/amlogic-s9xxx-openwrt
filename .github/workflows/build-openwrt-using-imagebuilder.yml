@@ -19,7 +19,7 @@ on:
         type: choice
         options:
           - openwrt:25.12.5
-          - openwrt:24.10.7
+          - openwrt:24.10.8
           - immortalwrt:25.12.1
           - immortalwrt:24.10.6
       openwrt_board:
@@ -51,6 +51,7 @@ on:
           - aio-3399c-ai
           - bdkj-bd-one
           - bdy-g18-pro
+          - bdy-g98
           - beikeyun
           - boca-tcn100
           - boca-tcn200
