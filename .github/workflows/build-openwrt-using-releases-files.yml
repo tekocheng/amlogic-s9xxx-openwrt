@@ -78,6 +78,7 @@ on:
           - gea-6319
           - gzpeite-p01
           - h28k
+          - h618-ai-douhe
           - h618-devboard
           - h66k
           - h68k
@@ -86,6 +87,7 @@ on:
           - h88k-v3
           - h96-max-m2
           - hk1-rbox-k8s
+          - houzzkit-f1
           - hs530r
           - ht2
           - hugsun-x99
@@ -251,6 +253,9 @@ on:
           - x88pro20
           - x98h
           - xiaobao
+          - youyeetoo-r1-v3
+          - youyeetoo-yy3568
+          - youyeetoo-yy3588
           - yskj
           - zcube1-max
           - zk-r39a
