@@ -337,7 +337,8 @@ on:
         options:
           - ophub
           - angel
-          - yourname
+          - cloudpeople
+          - nazz
 
 env:
   TZ: Etc/UTC
